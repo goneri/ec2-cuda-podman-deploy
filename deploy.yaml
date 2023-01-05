@@ -1,0 +1,12 @@
+---
+- hosts: localhost
+  gather_facts: false
+  module_defaults:
+    group/aws:
+      region: ca-central-1
+  tasks:
+  - include_role:
+      name: spawn
+    vars:
+      # in ca-central-1, the instance type is only available in the two first az
+      az: ca-central-1b

@@ -1,0 +1,52 @@
+- name: create VPC
+  amazon.aws.ec2_vpc_net:
+    name: "{{ vpc_name }}"
+    cidr_block: "{{ vpc_cidr }}"
+    state: present
+  register: vpc
+- name: associate subnet to the VPC
+  ec2_vpc_subnet:
+    state: present
+    vpc_id: "{{ vpc.vpc.id }}"
+    cidr: "{{ subnet_cidr }}"
+    map_public: yes
+    az: "{{ az }}"
+    resource_tags:
+      Name: "{{ subnet_name }}"
+  register: subnet
+- debug: var=subnet
+- name: create IGW
+  ec2_vpc_igw:
+    vpc_id: "{{ vpc.vpc.id }}"
+    state: "present"
+    tags:
+      Name: "{{ igw_name }}"
+  register: igw
+
+- ansible.builtin.debug:
+    var: vpc
+- name: Create the security group
+  amazon.aws.ec2_group:
+    name: "{{ sg_name }}"
+    description: SSH only secgroup
+    vpc_id: "{{ vpc.vpc.id }}"
+    rules:
+      - proto: tcp
+        ports:
+        - 22
+        cidr_ip: 0.0.0.0/0
+        rule_desc: allow all on port 22
+- name: start an instance with a public IP address
+  amazon.aws.ec2_instance:
+    name: "{{ instance_name }}"
+    key_name: "{{ keypair_name }}"
+    instance_type: g4dn.2xlarge
+    vpc_subnet_id: "{{ subnet.subnet.id }}"
+    security_group: "{{ sg_name }}"
+    network:
+      assign_public_ip: true
+    image_id: ami-0f372f8cb87ed5405
+    tags:
+      Environment: Testing
+    wait: true
+

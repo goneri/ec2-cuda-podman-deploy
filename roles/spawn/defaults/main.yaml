@@ -1,0 +1,11 @@
+---
+prefix: goneri
+image: ami-0f372f8cb87ed5405  # Fedora37 ca-central-1
+vpc_name: "{{ prefix }}-wisdom-dev-vpc"
+vpc_cidr: 10.10.0.0/24
+subnet_name: "Ansible Subnet"
+subnet_cidr: 10.10.0.0/26
+igw_name: "Traffic IGW"
+sg_name: "{{ prefix }}-wisdom-dev-sg"
+keypair_name: "test-{{ prefix }}"
+instance_name: "{{ prefix }}-wisdom-dev"
