@@ -1,6 +1,8 @@
 ---
 prefix: goneri
-image: ami-0f372f8cb87ed5405  # Fedora37 ca-central-1
+#image_ami: ami-057f927818ad393c5  # Fedora37 ca-central-1
+#image_ami: ami-006973061ff66f131  # Fedora36 ca-central-1
+image_ami: ami-0d04055bda07ba680  # RHEL-8.7.0_HVM-20221101-x86_64-0-Hourly2-GP2 ca-central-1
 vpc_name: "{{ prefix }}-wisdom-dev-vpc"
 vpc_cidr: 10.10.0.0/24
 subnet_name: "Ansible Subnet"
@@ -9,3 +11,5 @@ igw_name: "Traffic IGW"
 sg_name: "{{ prefix }}-wisdom-dev-sg"
 keypair_name: "test-{{ prefix }}"
 instance_name: "{{ prefix }}-wisdom-dev"
+#instance_user: fedora
+instance_user: ec2-user

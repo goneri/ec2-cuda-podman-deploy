@@ -1,97 +1,12 @@
 ---
 - hosts: localhost
   gather_facts: false
-  vars:
-    user: goneri
-    image: ami-0f372f8cb87ed5405
-    vpc_name: goneri-wisdom-dev-vpc
-    vpc_cidr: 10.10.0.0/24
-    subnet_name: "Ansible Subnet"
-    subnet_cidr: 10.10.0.0/26
-    igw_name: "Traffic IGW"
-    sg_name: goneri-wisdom-dev-sg
-    keypair_name: "test-goneri"
   module_defaults:
     group/aws:
       region: ca-central-1
   tasks:
-  - name: Look up the vpc
-    amazon.aws.ec2_vpc_net_info:
-      filters:
-        "tag:Name": goneri-wisdom-dev-vpc
-    register: result
-  - set_fact:
-      vpc: "{{ result.vpcs[0] }}"
-  - name: Look up the subnet
-    amazon.aws.ec2_vpc_subnet_info:
-      filters:
-        vpc-id: "{{ vpc.id }}"
-    register: result_subnet
-
-
-  - name: Delete the security group
-    amazon.aws.ec2_group:
-      name: "{{ sg_name }}"
-      state: absent
-
-  - when: result_subnet.subnets|length > 0
-    block:
-    - set_fact:
-        subnet: "{{ result_subnet.subnets[0] }}"
-
-    - name: Delete the instance
-      amazon.aws.ec2_instance:
-        name: "goneri-wisdom-dev"
-        state: absent
-        subnet_id: "{{ result_subnet.subnets[0].id }}"
-        
-    - name: Delete the subnet
-      ec2_vpc_subnet:
-        vpc_id: "{{ vpc.id }}"
-        cidr: "{{ subnet_cidr }}"
-        resource_tags:
-          Name: "{{ subnet_name }}"
-      register: subnet
-
-        
-    - name: Delete the subnet
-      ec2_vpc_subnet:
-        state: absent
-        vpc_id: "{{ vpc.id }}"
-#        az: ca-central-1b
-        cidr: "{{ subnet_cidr }}"
-        resource_tags:
-          Name: "{{ subnet_name }}"
-      register: subnet
-
-
-  - name: Look up the route table
-    amazon.aws.ec2_vpc_route_table_info:
-      filters:
-        vpc-id: "{{ vpc.id }}"
-    register: result
-  - debug: var=result
-
-
-  - when: result.route_tables|length > 0
-    block:
-    - debug: var=result.route_tables
-
-    - name: Disassociate gateway from route table
-      amazon.aws.ec2_vpc_route_table:
-        vpc_id: "{{ vpc.id }}"
-        route_table_id: "{{ item.id }}"
-        routes: []
-        lookup: id
-        gateway_id: None
-      with_items: "{{ result.route_tables }}"
-
-      
-  - name: Delete the Internet gateway
-    amazon.aws.ec2_vpc_igw:
-      vpc_id: "{{ vpc.id }}"
-      state: absent
-  - name: Purge the VPC
-    amazon.aws.ec2_vpc_net:
-      vpc_id: "{{ vpc.id }}"
-      state: absent
+  - name: Remove the podman connection
+    command: podman system connection remove gpu
+  - include_role:
+      name: spawn
+      tasks_from: purge

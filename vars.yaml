@@ -1,0 +1,6 @@
+---
+aws_region: ca-central-1
+# we need that becase with ca-central-1, the instance type is only available in the two first az
+aws_az: ca-central-1b
+wisdom_mar_path: /home/goneri/git_repos/wisdom/model/wisdom/wisdom.mar
+my_ssh_pub_key: /home/goneri/.ssh/id_rsa.pub  # Need to be a RSA key

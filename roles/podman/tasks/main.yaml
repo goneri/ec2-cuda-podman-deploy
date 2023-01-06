@@ -1,0 +1,18 @@
+---
+- name: Install podman
+  shell: |
+    yum module enable -y container-tools:rhel8
+    yum module install -y container-tools:rhel8
+    loginctl enable-linger {{ ansible_user }}
+  become: true
+
+- name: Enable podman for ec2-user
+  shell: |
+    podman --version # confirm it installed properly
+    podman --remote info # confirm ready for podman remote
+    systemctl --user enable --now podman.socket
+
+- name: Allow podman to access the decices
+  # See: https://docs.podman.io/en/latest/markdown/podman-build.1.html#device-host-device-container-device-permissions
+  command: setsebool -P container_use_devices=true
+  become: true

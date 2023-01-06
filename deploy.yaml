@@ -3,10 +3,47 @@
   gather_facts: false
   module_defaults:
     group/aws:
-      region: ca-central-1
+      region: "{{ aws_region }}"
   tasks:
   - include_role:
       name: spawn
     vars:
-      # in ca-central-1, the instance type is only available in the two first az
-      az: ca-central-1b
+      az: "{{ aws_az }}"
+
+- hosts: gpu
+  gather_facts: false
+  tasks:
+  - name: Wait until the connection is ready
+    ansible.builtin.wait_for_connection:
+  - name: Setup the Podman and CUDA
+    block:
+      - name: Register the instance
+        command: "subscription-manager register --username {{ lookup('ansible.builtin.env', 'RHSM_LOGIN') }} --password {{ lookup('ansible.builtin.env', 'RHSM_PASSWORD') }}"
+        become: true
+        register: rhsm_result
+        no_log: true
+        failed_when:
+          - not (rhsm_result is success or "This system is already registered." in rhsm_result.stderr)
+
+      - name: Install Podman
+        include_role:
+          name: podman
+
+      - name: Install nvidia kernel driver and CUDA
+        include_role:
+          name: nvidia-cuda
+    always:
+      - name: Unregister the instance from the RHSM
+        command: subscription-manager unregister
+        become: true
+
+  - name: Upload wisdom.mar
+    copy:
+      src: "{{ wisdom_mar_path }}"
+      dest: wisdom.mar
+
+- hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Set up the podman remote
+      command: podman system connection add -d --identity {{ my_ssh_pub_key  }} gpu ssh://{{ hostvars.gpu.ansible_user }}@{{ hostvars.gpu.ansible_host }}/run/user/1000/podman/podman.sock

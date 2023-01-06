@@ -14,8 +14,7 @@
     resource_tags:
       Name: "{{ subnet_name }}"
   register: subnet
-- debug: var=subnet
-- name: create IGW
+- name: create the IGW
   ec2_vpc_igw:
     vpc_id: "{{ vpc.vpc.id }}"
     state: "present"
@@ -23,8 +22,17 @@
       Name: "{{ igw_name }}"
   register: igw
 
-- ansible.builtin.debug:
-    var: vpc
+- debug: var=igw
+- name: Set a default route that go through the IGW
+  amazon.aws.ec2_vpc_route_table:
+    vpc_id: "{{ vpc.vpc.id }}"
+    tags:
+      Name: Public
+    subnets:
+      - "{{ subnet.subnet.id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ igw.gateway_id }}"
 - name: Create the security group
   amazon.aws.ec2_group:
     name: "{{ sg_name }}"
@@ -36,6 +44,14 @@
         - 22
         cidr_ip: 0.0.0.0/0
         rule_desc: allow all on port 22
+# TODO: This should not be necessary
+-  amazon.aws.ec2_key:
+    name:  "{{ keypair_name }}"
+    state: absent
+- name: Create the keypair
+  amazon.aws.ec2_key:
+    name:  "{{ keypair_name }}"
+    key_material: "{{ lookup('file', my_ssh_pub_key) }}"
 - name: start an instance with a public IP address
   amazon.aws.ec2_instance:
     name: "{{ instance_name }}"
@@ -45,8 +61,29 @@
     security_group: "{{ sg_name }}"
     network:
       assign_public_ip: true
-    image_id: ami-0f372f8cb87ed5405
+    image_id: "{{ image_ami }}"
     tags:
       Environment: Testing
+    volumes:
+      - device_name: /dev/sda1
+        ebs:
+          volume_size: 32
+          delete_on_termination: true
     wait: true
+    state: running
 
+- name: Collect information about the instance
+  amazon.aws.ec2_instance_info:
+    filters:
+      tag:Name: "{{ instance_name }}"
+      instance-state-name: ["running"]
+  register: instance_info
+- debug: var=instance_info.instances[0].public_ip_address
+
+- name: A the gpu host
+  ansible.builtin.add_host:
+    hostname: gpu
+    ansible_host: '{{ instance_info.instances[0].public_ip_address }}'
+    ansible_user: ec2-user
+    ansible_host_key_checking: false
+    ansible_ssh_private_key_file: "{{ my_ssh_pub_key }}"
