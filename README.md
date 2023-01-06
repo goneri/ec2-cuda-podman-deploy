@@ -1,4 +1,4 @@
-# Deploy CUDA in an AWS instance and configure a Podman connection
+# Ansible playbook to deploy CUDA in an AWS instance and configure a Podman connection
 
 - prepare the AWS instance (including a VPC and a subnet)
 - set-up podman
