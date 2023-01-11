@@ -28,8 +28,14 @@
     line: no-cgroups = true
   become: true
 
-- name: Ensure the nvidia driver is always loaded
-  command: systemctl start nvidia-persistenced
+- name: Ensure the nvidia driver is pre-loaded
+  # Without this task, you can expect the following error when a userland podman tries to access the GPU
+  # Error: OCI runtime error: runc: runc create failed: unable to start container process: error during container init: error running hook #0: error running hook: exit status 1, stdout: , stderr: Auto-detected mode as 'legacy'
+  # nvidia-container-cli: initialization error: nvml error: driver not loaded
+  ansible.builtin.systemd:
+    name: nvidia-persistenced
+    state: started
+    enabled: true
   become: true
 
 - name: Run nvidia-smi inside a container without root privilege
