@@ -41,6 +41,7 @@
     copy:
       src: "{{ wisdom_mar_path }}"
       dest: wisdom.mar
+      setype: container_file_t
 
 - hosts: localhost
   gather_facts: false
