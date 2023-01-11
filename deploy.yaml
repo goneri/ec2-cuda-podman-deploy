@@ -46,4 +46,4 @@
   gather_facts: false
   tasks:
     - name: Set up the podman remote
-      command: podman system connection add -d --identity {{ my_ssh_pub_key  }} gpu ssh://{{ hostvars.gpu.ansible_user }}@{{ hostvars.gpu.ansible_host }}/run/user/1000/podman/podman.sock
+      command: podman system connection add -d gpu ssh://{{ hostvars.gpu.ansible_user }}@{{ hostvars.gpu.ansible_host }}/run/user/1000/podman/podman.sock
