@@ -48,3 +48,11 @@
   tasks:
     - name: Set up the podman remote
       command: podman system connection add -d gpu ssh://{{ hostvars.gpu.ansible_user }}@{{ hostvars.gpu.ansible_host }}/run/user/1000/podman/podman.sock
+    - name: Add an entry in ~/.ssh/config
+      community.general.ssh_config:
+        ssh_config_file: ~/.ssh/config
+        host: gpu
+        hostname: "{{ hostvars.gpu.ansible_host }}"
+        remote_user: "{{ hostvars.gpu.ansible_user }}"
+        state: present
+      when: add_gpu_host_in_ssh_config|default(false) is true
