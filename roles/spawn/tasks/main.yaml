@@ -55,6 +55,7 @@
 - name: start an instance with a public IP address
   amazon.aws.ec2_instance:
     name: "{{ instance_name }}"
+    termination_protection: true
     key_name: "{{ keypair_name }}"
     instance_type: g4dn.2xlarge
     vpc_subnet_id: "{{ subnet.subnet.id }}"
