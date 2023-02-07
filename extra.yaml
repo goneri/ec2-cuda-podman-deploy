@@ -1,0 +1,21 @@
+- hosts: localhost
+  tasks:
+    - name: Push the ansible-wisdom-service
+      command: rsync -av --delete --filter=':- .gitignore' /home/goneri/git_repos/wisdom/ansible-wisdom-model/ gpu:ansible-wisdom-model/
+
+- hosts: gpu
+  tasks:
+    - name: Install tmux
+      package:
+        name:
+          - tmux
+          - vim
+      become: true
+    - name: Prefetch the pytorch image
+      command: podman pull docker.io/pytorch/torchserve-nightly:latest-gpu
+    - name: Build the image
+      command: make model-container
+      args:
+        chdir: ~/ansible-wisdom-model
+    - name: Start the server
+      command: podman run --gpus all -d --rm -p 7080:7080 -v ~/wisdom.mar:/home/model-server/model-store/wisdom.mar --name=wisdom wisdom
