@@ -37,6 +37,11 @@
         command: subscription-manager unregister
         become: true
 
+
+  - name: Allow container to use the system device(s)
+    command: "setsebool -P container_use_devices=true"
+    become: true
+
   - name: Upload wisdom.mar
     copy:
       src: "{{ wisdom_mar_path }}"
