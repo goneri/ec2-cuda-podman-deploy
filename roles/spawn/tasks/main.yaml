@@ -15,7 +15,7 @@
       Name: "{{ subnet_name }}"
   register: subnet
 - name: create the IGW
-  ec2_vpc_igw:
+  amazon.aws.ec2_vpc_igw:
     vpc_id: "{{ vpc.vpc.id }}"
     state: "present"
     tags:
