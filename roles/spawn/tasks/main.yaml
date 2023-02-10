@@ -55,6 +55,7 @@
 - name: start an instance with a public IP address
   amazon.aws.ec2_instance:
     name: "{{ instance_name }}"
+    termination_protection: true
     key_name: "{{ keypair_name }}"
     instance_type: g4dn.2xlarge
     vpc_subnet_id: "{{ subnet.subnet.id }}"
@@ -67,7 +68,7 @@
     volumes:
       - device_name: /dev/sda1
         ebs:
-          volume_size: 32
+          volume_size: 64
           delete_on_termination: true
     wait: true
     state: running
@@ -86,4 +87,4 @@
     ansible_host: '{{ instance_info.instances[0].public_ip_address }}'
     ansible_user: ec2-user
     ansible_host_key_checking: false
-    ansible_ssh_private_key_file: "{{ my_ssh_pub_key }}"
+    ansible_ssh_private_key_file: "{{ my_ssh_private_key }}"
