@@ -6,3 +6,4 @@ wisdom_mar_path: /home/goneri/git_repos/wisdom/model/wisdom/wisdom.mar
 my_ssh_pub_key: /home/goneri/.ssh/id_rsa.pub  # Need to be a RSA key
 my_ssh_private_key: /home/goneri/.ssh/id_rsa
 add_gpu_host_in_ssh_config: false
+my_prefix: goneri

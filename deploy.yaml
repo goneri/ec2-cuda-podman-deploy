@@ -9,6 +9,7 @@
       name: spawn
     vars:
       az: "{{ aws_az }}"
+      prefix: "{{ my_prefix }}"
 
 - hosts: gpu
   gather_facts: false

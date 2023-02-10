@@ -13,7 +13,6 @@ To set-up the instance:
 ```
 cp vars.yaml $USER.yaml
 vim $USER.yaml
-vim roles/spawn/defaults/main.yaml # modify the prefix to be your alias
 # upload your public key to AWS and name it test-{{ prefix }}
 export RHSM_LOGIN="your-RHSM-login"
 export RHSM_PASSWORD="your-RHSM-password"
