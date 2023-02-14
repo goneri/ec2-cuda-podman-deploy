@@ -17,6 +17,12 @@
   - set_fact:
       subnet: "{{ result_subnet.subnets[0] }}"
 
+  - name: Disable the termination protection
+    amazon.aws.ec2_instance:
+      name: "goneri-wisdom-dev"
+      termination_protection: false
+      subnet_id: "{{ result_subnet.subnets[0].id }}"
+
   - name: Delete the instance
     amazon.aws.ec2_instance:
       name: "goneri-wisdom-dev"
