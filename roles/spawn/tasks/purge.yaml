@@ -28,7 +28,7 @@
       name: "goneri-wisdom-dev"
       state: absent
       subnet_id: "{{ result_subnet.subnets[0].id }}"
-      
+
   - name: Delete the subnet
     ec2_vpc_subnet:
       vpc_id: "{{ vpc.id }}"
@@ -37,7 +37,6 @@
         Name: "{{ subnet_name }}"
     register: subnet
 
-      
   - name: Delete the subnet
     ec2_vpc_subnet:
       state: absent
@@ -46,7 +45,6 @@
       resource_tags:
         Name: "{{ subnet_name }}"
     register: subnet
-
 
 - name: Look up the route table
   amazon.aws.ec2_vpc_route_table_info:
@@ -73,7 +71,7 @@
   amazon.aws.ec2_group:
     name: "{{ sg_name }}"
     state: absent
-  
+
 - name: Delete the Internet gateway
   amazon.aws.ec2_vpc_igw:
     vpc_id: "{{ vpc.id }}"
