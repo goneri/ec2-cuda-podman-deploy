@@ -1,7 +1,7 @@
 - hosts: localhost
   tasks:
     - name: Push the ansible-wisdom-service
-      command: rsync -av --delete --filter=':- .gitignore' /home/goneri/git_repos/wisdom/ansible-wisdom-model/ gpu:ansible-wisdom-model/
+      command: rsync -av --delete --filter=':- .gitignore' {{ my_local_ansible_wisdom_model_clone }} gpu:ansible-wisdom-model/
 
 - hosts: gpu
   tasks:

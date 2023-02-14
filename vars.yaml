@@ -7,3 +7,5 @@ my_ssh_pub_key: /home/goneri/.ssh/id_rsa.pub  # Need to be a RSA key
 my_ssh_private_key: /home/goneri/.ssh/id_rsa
 add_gpu_host_in_ssh_config: false
 my_prefix: goneri
+# A local copy of ansible-wisdom-model that will be rsynced on the ec2 instance
+my_local_ansible_wisdom_model_clone: /home/goneri/git_repos/wisdom/ansible-wisdom-model/
