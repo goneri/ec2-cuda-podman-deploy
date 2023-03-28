@@ -2,7 +2,22 @@
 aws_region: ca-central-1
 # we need that becase with ca-central-1, the instance type is only available in the two first az
 aws_az: ca-central-1b
+# Old format:
 wisdom_mar_path: /home/goneri/git_repos/wisdom/model/wisdom/wisdom.mar
+wisdom_versions:
+  - mar: "{{ wisdom_mar_path }}"
+    version: 5
+# New format which allow the execution of several different models in parallel:
+# wisdom_versions:
+#   - mar: ~/wisdom-ansible-v5.mar
+#     version: 5
+#     port: 7085
+#   - mar: ~/wisdom-ansible-v6.mar
+#     version: 6
+#     port: 7086
+#   - mar: ~/wisdom-ansible-v7.mar
+#     version: 7
+#     port: 7087
 my_ssh_pub_key: /home/goneri/.ssh/id_rsa.pub  # Need to be a RSA key
 my_ssh_private_key: /home/goneri/.ssh/id_rsa
 add_gpu_host_in_ssh_config: false

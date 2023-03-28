@@ -10,6 +10,7 @@
         name:
           - tmux
           - vim
+          - jq
       become: true
     - name: Prefetch the pytorch image
       command: podman pull docker.io/pytorch/torchserve-nightly:latest-gpu
@@ -17,5 +18,30 @@
       command: make model-container
       args:
         chdir: ~/ansible-wisdom-model
-    - name: Start the server
-      command: podman run --gpus all -d --rm -p 7080:7080 -v ~/wisdom.mar:/home/model-server/model-store/wisdom.mar --name=wisdom wisdom
+    - name: Create the start_server.sh script
+      copy:
+        content: |
+          #!/bin/bash
+          #
+          set -eux
+          wisdom_version=${1}
+          port=${2}
+          mar="/home/ec2-user/wisdom-ansible-v${wisdom_version}.mar"
+          podman stop -i wisdom-v${wisdom_version}
+          podman run --gpus all -d --rm -p ${port}:7080 -v ${mar}:/home/model-server/model-store/wisdom.mar --name=wisdom-v${wisdom_version} wisdom
+        dest: start_server.sh
+        mode: '0755'
+    - name: Create the test_server.sh script
+      copy:
+        content: |
+          #!/bin/bash
+          set -eux
+          port=$1
+          curl -X POST http://localhost:${port}/predictions/wisdom -H 'accept: application/json' -H 'Content-Type: application/json' -d '{"instances":[{"context": "", "prompt": "- name: Install PhpRedis extension (Debian)."}]}'|jq .predictions
+        dest: test_server.sh
+        mode: '0755'
+    - name: Start the servers
+      command: ./start_server.sh {{ item.version }} {{ item.port }}
+      loop: "{{ wisdom_versions  }}"
+      loop_control:
+        pause: 10

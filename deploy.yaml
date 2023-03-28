@@ -43,11 +43,12 @@
     command: "setsebool -P container_use_devices=true"
     become: true
 
-  - name: Upload wisdom.mar
+  - name: Upload the models
     copy:
-      src: "{{ wisdom_mar_path }}"
-      dest: wisdom.mar
+      src: "{{ item.mar }}"
+      dest: "/home/{{ ansible_user }}/"
       setype: container_file_t
+    loop: "{{ wisdom_mar_paths }}"
 
 - hosts: localhost
   gather_facts: false
