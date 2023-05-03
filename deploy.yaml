@@ -46,9 +46,9 @@
   - name: Upload the models
     copy:
       src: "{{ item.mar }}"
-      dest: "/home/{{ ansible_user }}/"
+      dest: "/home/{{ ansible_user }}/wisdom-ansible-v{{ item.version  }}.mar"
       setype: container_file_t
-    loop: "{{ wisdom_mar_paths }}"
+    loop: "{{ wisdom_versions }}"
 
 - hosts: localhost
   gather_facts: false
