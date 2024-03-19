@@ -16,50 +16,18 @@
   tasks:
   - name: Wait until the connection is ready
     ansible.builtin.wait_for_connection:
-  - name: Setup the Podman and CUDA
-    block:
-      - name: Register the instance
-        command: "subscription-manager register --username {{ lookup('ansible.builtin.env', 'RHSM_LOGIN') }} --password {{ lookup('ansible.builtin.env', 'RHSM_PASSWORD') }}"
-        become: true
-        register: rhsm_result
-        no_log: true
-        failed_when:
-          - not (rhsm_result is success or "This system is already registered." in rhsm_result.stderr)
 
-      - name: Install Podman
-        include_role:
-          name: podman
-
-      - name: Install nvidia kernel driver and CUDA
-        include_role:
-          name: nvidia-cuda
-    always:
-      - name: Unregister the instance from the RHSM
-        command: subscription-manager unregister
-        become: true
-
-
-  - name: Allow container to use the system device(s)
-    command: "setsebool -P container_use_devices=true"
-    become: true
-
-  - name: Upload the models
-    copy:
-      src: "{{ item.mar }}"
-      dest: "/home/{{ ansible_user }}/wisdom-ansible-v{{ item.version  }}.mar"
-      setype: container_file_t
-    loop: "{{ wisdom_versions }}"
-
-- hosts: localhost
-  gather_facts: false
+- hosts: gpu
+  become: true
   tasks:
-    - name: Set up the podman remote
-      command: podman system connection add -d gpu ssh://{{ hostvars.gpu.ansible_user }}@{{ hostvars.gpu.ansible_host }}/run/user/1000/podman/podman.sock
-    - name: Add an entry in ~/.ssh/config
-      community.general.ssh_config:
-        ssh_config_file: ~/.ssh/config
-        host: gpu
-        hostname: "{{ hostvars.gpu.ansible_host }}"
-        remote_user: "{{ hostvars.gpu.ansible_user }}"
-        state: present
-      when: add_gpu_host_in_ssh_config|default(false) is true
+    - include_role:
+        name: nvidia.nvidia_driver
+
+- hosts: gpu
+  gather_facts: false
+  name: Install Ollama
+  tasks:
+  - name: Wait until the connection is ready
+    ansible.builtin.wait_for_connection:
+  - shell: |
+      curl -fsSL https://ollama.com/install.sh | sh
