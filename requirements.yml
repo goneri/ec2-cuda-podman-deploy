@@ -3,4 +3,8 @@ collections:
   - amazon.aws
   - community.general
 roles:
-  - nvidia.nvidia_driver
+  # See: https://github.com/NVIDIA/ansible-role-nvidia-driver/pull/68
+  # - name: nvidia.nvidia_driver
+  - name: nvidia.nvidia_driver
+    src: https://github.com/Zorlin/ansible-role-nvidia-driver
+    version: master
