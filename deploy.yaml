@@ -16,12 +16,28 @@
   tasks:
   - name: Wait until the connection is ready
     ansible.builtin.wait_for_connection:
+  - name: Update the system
+    ansible.builtin.dnf:
+      name: '*'
+      state: 'latest'
+    become: true
+  - name: Reboot the system
+    reboot:
+    become: true
+
+- hosts: gpu
+  gather_facts: false
+  tasks:
+  - name: Wait until the connection is ready
+    ansible.builtin.wait_for_connection:
 
 - hosts: gpu
   become: true
   tasks:
     - include_role:
         name: nvidia.nvidia_driver
+      vars:
+        nvidia_driver_branch: "560"
 
 - hosts: gpu
   gather_facts: false

@@ -1,5 +1,7 @@
 #!/bin/bash
 set -eux
+source venv/bin/activate
+pip install -r requirements.txt
 ansible-galaxy collection install --requirements-file requirements.yml --collections-path collections
 ansible-galaxy role install -r requirements.yml --roles-path roles
 pip install -r requirements.txt
