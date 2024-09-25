@@ -21,7 +21,6 @@
     amazon.aws.ec2_instance:
       name: "{{ instance_name }}"
       state: absent
-      termination_protection: false
       subnet_id: "{{ result_subnet.subnets[0].id }}"
 
   - name: Delete the subnet
