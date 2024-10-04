@@ -3,8 +3,14 @@
     filters:
       "tag:Name": goneri-wisdom-dev-vpc
   register: result
+
+- name: Exit if not VPC exists
+  meta: end_play
+  when: result.vpcs|length == 0
+
 - set_fact:
     vpc: "{{ result.vpcs[0] }}"
+
 - name: Look up the subnet
   amazon.aws.ec2_vpc_subnet_info:
     filters:
