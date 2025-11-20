@@ -1,0 +1,44 @@
+---
+- command: subscription-manager register --username "{{ ansible_env.RHSM_LOGIN }}" --password "{{ ansible_env.RHSM_PASSWORD }}"
+  register: sm
+  failed_when: sm.rc not in [0, 64]
+  become: true
+  delegate_to: new_host
+- shell: |
+    subscription-manager config --rhsm.manage_repos=1
+    subscription-manager repos --enable=rhel-10-for-x86_64-appstream-rpms
+    subscription-manager repos --enable=rhel-10-for-x86_64-baseos-rpms
+    subscription-manager repos --enable=codeready-builder-for-rhel-10-x86_64-rpms
+    dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm
+    dnf config-manager --set-enabled crb || true
+  become: true
+  delegate_to: new_host
+- shell: |
+    dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel10/x86_64/cuda-rhel10.repo
+    dnf clean expire-cache
+  become: true
+  delegate_to: new_host
+- ansible.builtin.package:
+    name:
+      - kernel-devel-matched
+      - kernel-headers
+      - nvidia-driver-cuda
+      - kmod-nvidia-open-dkms
+      - cuda-libraries-devel-13-0
+      - cuda-nvcc-13-0
+      - epel-release
+      - libnvidia-container-tools
+      - nvidia-container-toolkit
+    state: present
+  become: true
+  delegate_to: new_host
+- command: subscription-manager unregister
+  become: true
+  delegate_to: new_host
+- command: nvidia-smi
+  become: true
+  delegate_to: new_host
+- command: python3.12 -m pip install --user vllm flashinfer-python flashinfer-cubin timm huggingface_hub Pillow pyzmq transformers accelerate qwen_vl_utils
+  delegate_to: new_host
+- command: hf auth login --token {{ ansible_env.HF_TOKEN }}
+  delegate_to: new_host

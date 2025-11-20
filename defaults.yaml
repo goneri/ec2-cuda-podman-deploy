@@ -1,0 +1,24 @@
+---
+aws_region: ca-central-1
+# we need that becase with ca-central-1, the instance type is only available in the two first az
+#aws_az: ca-central-1b
+# Old format:
+my_ssh_pub_key: "{{ '~/.ssh/id_ed25519.pub' | ansible.builtin.expanduser }}"
+my_ssh_private_key: "{{ '~/.ssh/id_ed25519' | ansible.builtin.expanduser }}"
+my_prefix: "{{ lookup('env', 'USER') }}"
+add_host_in_ssh_config: true
+# https://aws.amazon.com/ec2/instance-types/general-purpose/
+target_hostname: aap.lab
+extra_ssh_keys: []
+
+
+
+instance_type: m5a.2xlarge
+# AWS_PROFILE=wisdom-dev AWS_REGION=ca-central-1 aws ec2 describe-images --owners 309956199498 --query 'sort_by(Images, &Name)[*].[CreationDate,Name,ImageId]' --filters "Name=name,Values=RHEL-10*" --output table|tail -n 5
+image_ami: ami-07a0ee7a51a386be3 # RHEL-9.6.0_HVM-20251030-x86_64-0-Hourly2-GP3
+with_cuda: false
+
+#instance_type: g6.xlarge
+#image_ami: ami-0f927a9ad837da085 # RHEL-10
+#instance_size: 128
+#with_cuda: true

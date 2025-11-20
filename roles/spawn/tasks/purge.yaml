@@ -1,7 +1,7 @@
 - name: Look up the vpc
   amazon.aws.ec2_vpc_net_info:
     filters:
-      "tag:Name": goneri-wisdom-dev-vpc
+      "tag:Name": "{{ vpc_name }}"
   register: result
 
 - name: Exit if not VPC exists

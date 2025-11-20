@@ -1,56 +1,35 @@
 ---
 - hosts: localhost
-  gather_facts: false
   module_defaults:
     group/aws:
       region: "{{ aws_region }}"
   tasks:
+  - debug: var=image_ami
   - include_role:
       name: spawn
     vars:
       az: "{{ aws_az }}"
       prefix: "{{ my_prefix }}"
+      image_ami: "{{ image_ami }}"
+      instance_type: "{{ instance_type }}"
 
-- hosts: gpu
+- hosts: new_host
   gather_facts: false
   tasks:
-  - name: Wait until the connection is ready
-    ansible.builtin.wait_for_connection:
-  - name: Update the system
-    ansible.builtin.dnf:
-      name: '*'
-      state: 'latest'
-    become: true
-  - name: Reboot the system
-    reboot:
-    become: true
-
-- hosts: gpu
-  gather_facts: false
-  tasks:
-  - name: Wait until the connection is ready
-    ansible.builtin.wait_for_connection:
-
-- hosts: gpu
-  become: true
-  tasks:
-    - include_role:
-        name: nvidia.nvidia_driver
-      vars:
-        nvidia_driver_branch: "560"
-
-- hosts: gpu
-  gather_facts: false
-  name: Install Ollama
-  tasks:
-  - name: Wait until the connection is ready
-    ansible.builtin.wait_for_connection:
-  - shell: |
-      curl -fsSL https://ollama.com/install.sh | sh
-
-- hosts: gpu
-  gather_facts: false
-  tasks:
-  - name: Final message
+  - copy:
+      content: |
+        Host {{ target_hostname }}
+          hostname {{ ansible_host }}
+          IdentityFile {{ ansible_ssh_private_key_file }}
+          User ec2-user
+      dest: ~/.ssh/{{ my_prefix }}_{{ target_hostname }}_host_config
+    delegate_to: localhost
+    when: add_host_in_ssh_config
+  - name: Final message with a configuration file
     debug:
-      msg: "You can connecto your instance with: ssh -i {{ ansible_ssh_private_key_file }} ec2-user@{{ ansible_host }}"
+      msg: "You can connect to your instance with: ssh -F ~/.ssh/{{ my_prefix }}_{{ target_hostname }}_host_config {{ target_hostname }}"
+    when: add_host_in_ssh_config
+  - name: Final message with no configuration file
+    debug:
+      msg: "You can connect to your instance with: ssh -i {{ ansible_ssh_private_key_file }} ec2-user@{{ ansible_host }}"
+    when: not add_host_in_ssh_config

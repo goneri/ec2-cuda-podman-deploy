@@ -1,0 +1,66 @@
+- name: Wait until the connection is ready
+  ansible.builtin.wait_for_connection:
+  delegate_to: new_host
+
+- name: Update the system
+  ansible.builtin.dnf:
+    name: '*'
+    state: 'latest'
+  become: true
+  register: dnf_update_result
+  delegate_to: new_host
+- name: Reboot the system
+  reboot:
+  become: true
+  delegate_to: new_host
+  when: dnf_update_result.changed
+
+- name: Wait until the connection is ready
+  ansible.builtin.wait_for_connection:
+  delegate_to: new_host
+
+- name: Install the base packages
+  ansible.builtin.dnf:
+    name:
+      - python3.12
+      - python3.12-cryptography
+      - python3.12-psycopg2
+      - python3.12-pip
+      - python3.12-devel
+      - vim
+      - git-core
+      - ansible-core
+      - podman
+    state: present
+  become: true
+  delegate_to: new_host
+- name: Set a hostname specifying strategy
+  ansible.builtin.hostname:
+    name: "{{ target_hostname }}"
+    use: systemd
+  become: true
+  delegate_to: new_host
+- copy:
+    content: |
+      127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4 {{ target_hostname }}
+      ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+    dest: /etc/hosts
+  become: true
+  delegate_to: new_host
+- name: Set authorized keys taken from url
+  ansible.posix.authorized_key:
+    user: ec2-user
+    state: present
+    key: "{{ item }}"
+  loop: "{{ extra_ssh_keys|default([]) }}"
+  delegate_to: new_host
+- setup:
+    filter: ansible_env
+- name: Log in podman (registry.redhat.io)
+  command: podman login -u='{{ ansible_env.PODMAN_REDHAT_IO_USER }}' -p='{{ ansible_env.PODMAN_REDHAT_IO_PASSWORD }}' registry.redhat.io
+  when: ansible_env.PODMAN_REDHAT_IO_USER|length > 0
+  delegate_to: new_host
+- name: Log in podman (quay.io)
+  command: podman login -u='{{ ansible_env.PODMAN_QUAY_IO_USER }}' -p='{{ ansible_env.PODMAN_QUAY_IO_PASSWORD }}' quay.io 
+  when: ansible_env.PODMAN_QUAY_IO_USER|length > 0
+  delegate_to: new_host

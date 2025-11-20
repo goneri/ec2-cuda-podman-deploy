@@ -6,7 +6,7 @@
       region: ca-central-1
   tasks:
   - name: Remove the podman connection
-    command: podman system connection remove gpu
+    command: podman system connection remove {{ target_hostname }}
   - include_role:
       name: spawn
       tasks_from: purge

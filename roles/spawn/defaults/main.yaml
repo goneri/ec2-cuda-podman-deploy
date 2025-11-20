@@ -4,7 +4,7 @@
 image_ami: ami-0c23a35603e3d8ba4  # RHEL-9.0.0_HVM-20220513-x86_64-0-Hourly2-GP2 ca-central-1
 vpc_name: "{{ prefix }}-wisdom-dev-vpc"
 vpc_cidr: 10.10.0.0/24
-subnet_name: "Ansible Subnet"
+subnet_name: "{{ prefix }}-Ansible Subnet"
 subnet_cidr: 10.10.0.0/26
 igw_name: "Traffic IGW"
 sg_name: "{{ prefix }}-wisdom-dev-sg"
@@ -12,3 +12,6 @@ keypair_name: "test-{{ prefix }}"
 instance_name: "{{ prefix }}-wisdom-dev"
 #instance_user: fedora
 instance_user: ec2-user
+instance_type: g5.12xlarge 
+instance_size: 64
+with_cuda: false
